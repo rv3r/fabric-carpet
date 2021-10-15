@@ -15,6 +15,7 @@ import carpet.script.value.ListValue;
 import carpet.script.value.NBTSerializableValue;
 import carpet.script.value.NumericValue;
 import carpet.script.value.StringValue;
+import carpet.script.value.StatusEffectInstanceValue;
 import carpet.script.value.Value;
 import carpet.script.value.ValueConversions;
 import carpet.settings.ParsedRule;
@@ -30,6 +31,7 @@ import net.minecraft.entity.passive.MerchantEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
@@ -771,6 +773,28 @@ public class CarpetEventServer
             }
         };
 
+				public static final Event PLAYER_EFFECT_APPLIED = new Event("player_effect_applied", 4, false)
+				{
+						@Override
+						public void onEffectApplied(ServerPlayerEntity player, String effect, int amplifier, int ticks) {
+							handler.call( () -> Arrays.asList(new EntityValue(player), new StringValue(effect), new NumericValue(amplifier), new NumericValue(ticks)), player::getCommandSource);
+						}
+				};
+				public static final Event PLAYER_EFFECT_UPGRADED = new Event("player_effect_upgraded", 4, false)
+				{
+						@Override
+						public void onEffectUpgraded(ServerPlayerEntity player, String effect, int amplifier, int ticks) {
+							handler.call( () -> Arrays.asList(new EntityValue(player), new StringValue(effect), new NumericValue(amplifier), new NumericValue(ticks)), player::getCommandSource);
+						}
+				};
+				public static final Event PLAYER_EFFECT_REMOVED = new Event("player_effect_removed", 3, false)
+				{
+						@Override
+						public void onEffectRemoved(ServerPlayerEntity player, String effect, int amplifier) {
+							handler.call( () -> Arrays.asList(new EntityValue(player), new StringValue(effect), new NumericValue(amplifier)), player::getCommandSource);
+						}
+				};
+
         public static final Event PLAYER_DIES = new Event("player_dies", 1, false)
         {
             @Override
@@ -1065,7 +1089,10 @@ public class CarpetEventServer
         public void onEntityAction(Entity entity, boolean created) { }
         public void onDimensionChange(ServerPlayerEntity player, Vec3d from, Vec3d to, RegistryKey<World> fromDim, RegistryKey<World> dimTo) {}
         public void onDamage(Entity target, float amount, DamageSource source) { }
-        public void onRecipeSelected(ServerPlayerEntity player, Identifier recipe, boolean fullStack) {}
+        public void onEffectApplied(ServerPlayerEntity player, String effect, int amplifier, int ticks) { }
+        public void onEffectUpgraded(ServerPlayerEntity player, String effect, int amplifier, int ticks) { }
+        public void onEffectRemoved(ServerPlayerEntity player, String effect, int amplifier) { }
+				public void onRecipeSelected(ServerPlayerEntity player, Identifier recipe, boolean fullStack) {}
         public void onSlotSwitch(ServerPlayerEntity player, int from, int to) {}
         public void onTrade(ServerPlayerEntity player, Merchant merchant, TradeOffer tradeOffer) {}
 
