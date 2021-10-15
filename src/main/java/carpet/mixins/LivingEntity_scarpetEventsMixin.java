@@ -4,6 +4,7 @@ import carpet.fakes.EntityInterface;
 import carpet.fakes.LivingEntityInterface;
 import carpet.script.EntityEventsGroup;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -15,8 +16,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import org.jetbrains.annotations.Nullable;
 
 import static carpet.script.CarpetEventServer.Event.PLAYER_DEALS_DAMAGE;
+import static carpet.script.CarpetEventServer.Event.PLAYER_EFFECT_APPLIED;
+import static carpet.script.CarpetEventServer.Event.PLAYER_EFFECT_UPGRADED;
+import static carpet.script.CarpetEventServer.Event.PLAYER_EFFECT_REMOVED;
+
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntity_scarpetEventsMixin extends Entity implements LivingEntityInterface
@@ -53,6 +59,33 @@ public abstract class LivingEntity_scarpetEventsMixin extends Entity implements 
         if (source.getAttacker() instanceof ServerPlayerEntity && PLAYER_DEALS_DAMAGE.isNeeded())
         {
             PLAYER_DEALS_DAMAGE.onDamage(this, amount, source);
+        }
+    }
+
+		@Inject(method = "onStatusEffectApplied", at = @At("HEAD"))
+    private void onEffectApplied(StatusEffectInstance effect, @Nullable Entity source, CallbackInfo ci)
+    {
+        if (PLAYER_EFFECT_APPLIED.isNeeded())
+        {
+            PLAYER_EFFECT_APPLIED.onEffectApplied((ServerPlayerEntity)(Object)this, effect.getEffectType().getName().getString(), effect.getAmplifier(), effect.getDuration());
+        }
+    }
+
+		@Inject(method = "onStatusEffectUpgraded", at = @At("HEAD"))
+    private void onEffectUpgraded(StatusEffectInstance effect, boolean reapplyEffect, @Nullable Entity source, CallbackInfo ci)
+    {
+        if (PLAYER_EFFECT_UPGRADED.isNeeded())
+        {
+            PLAYER_EFFECT_UPGRADED.onEffectUpgraded((ServerPlayerEntity)(Object)this, effect.getEffectType().getName().getString(), effect.getAmplifier(), effect.getDuration());
+        }
+    }
+
+		@Inject(method = "onStatusEffectRemoved", at = @At("HEAD"))
+    private void onEffectRemoved(StatusEffectInstance effect, CallbackInfo ci)
+    {
+        if (PLAYER_EFFECT_REMOVED.isNeeded())
+        {
+            PLAYER_EFFECT_REMOVED.onEffectRemoved((ServerPlayerEntity)(Object)this, effect.getEffectType().getName().getString(), effect.getAmplifier());
         }
     }
 
